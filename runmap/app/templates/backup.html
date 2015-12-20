@@ -6,7 +6,9 @@
 	<style type="text/css">
 		body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
 	</style>
-	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=j69Afg8IK2tDbN2ysn509mqm"></script>
+{% block page_content %}
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak={{ api_key }}"></script>
+{% endblock %}
 	<title>单个标注点沿直线的轨迹运动</title>
 </head>
 <body>
@@ -56,4 +58,22 @@
 	setTimeout(function(){
 		run();
 	},1500);
+
+  // 添加定位控件
+  var geolocationControl = new BMap.GeolocationControl();
+  geolocationControl.addEventListener("locationSuccess", function(e){
+    // 定位成功事件
+    var address = '';
+    address += e.addressComponent.province;
+    address += e.addressComponent.city;
+    address += e.addressComponent.district;
+    address += e.addressComponent.street;
+    address += e.addressComponent.streetNumber;
+    alert("当前定位地址为：" + address);
+  });
+  geolocationControl.addEventListener("locationError",function(e){
+    // 定位失败事件
+    alert(e.message);
+  });
+  map.addControl(geolocationControl);
 </script>

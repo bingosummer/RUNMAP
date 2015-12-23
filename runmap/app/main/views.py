@@ -15,6 +15,7 @@ import cv2.cv as cv
 import numpy as np
 import urllib2
 import time
+import os
 
 
 logger = logging.getLogger(__file__)
@@ -22,10 +23,10 @@ logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
 
-@main.route('/runmap/', methods=['GET', 'POST'])
-def index():
+@main.route('/runmap/<user>', methods=['GET', 'POST'])
+def index(user):
     #return render_template('index.html', api_key=current_app.config['API_KEY'])
-    return render_template('index.html')
+    return render_template('index.html', points_js=url_for('static', filename='js/{0}.js'.format(user))) 
  
 @main.route('/', methods = ['GET', 'POST'] )  
 def wechat():  
@@ -49,7 +50,9 @@ def wechat():
         tou = xml_rec.find('ToUserName').text
         if msgtype == 'image':
             picurl = xml_rec.find('PicUrl').text
-            with open("app/static/js/points-sample-data.js", "w") as f:
+            points_js = "app/static/js/{0}.js".format(fromu)
+            os.remove(points_js)
+            with open(points_js, "w") as f:
                 prefix = 'var data = {"data":['
                 data_points = ""
                 points = url_jpg_contours(picurl)
@@ -57,7 +60,7 @@ def wechat():
                 suffix = '],"total":{0},"rt_loc_cnt":47764510,"errorno":0,"NearestTime":"{1}","userTime":"{1}"}}'.format(len(points), time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
                 f.write(prefix+data_points+suffix)
             xml_rep_text = "<xml><ToUserName><![CDATA[%s]]></ToUserName><FromUserName><![CDATA[%s]]></FromUserName><CreateTime>%s</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[%s]]></Content></xml>"
-            response = make_response(xml_rep_text % (fromu,tou,str(int(time.time())),"http://13.75.40.237/runmap/"))
+            response = make_response(xml_rep_text % (fromu,tou,str(int(time.time())),"http://13.75.40.237/runmap/{0}".format(fromu)))
             response.content_type='application/xml'
             return response
         return make_response('')
